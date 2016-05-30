@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using System.Collections;
 
+//Place on an EMPTY containing a SLIDER and a TEXT BOX, the EMPTY being a CHILD of the thing the health bar should float over
 public class FloatingHealth : MonoBehaviour {
 
 	Vector3 offset = new Vector3 (0, 2.5f, 0);

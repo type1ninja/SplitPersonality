@@ -36,4 +36,11 @@ MonoBehaviour:
   - PunRespawn
   - RequestForPickupTimes
   - TaggedPlayer
+  - ParentPlayerToChar
+  - SetParentToChar
+  - Move
+  - UpdateRot
+  - DontJump
+  - Jump
+  - UpdateUpSpeed
   DisableAutoOpenWizard: 1

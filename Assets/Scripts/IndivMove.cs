@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public abstract class IndivMove : MonoBehaviour {
+public class IndivMove : Photon.MonoBehaviour {
 
 	CharacterController controller;
 
@@ -18,23 +18,24 @@ public abstract class IndivMove : MonoBehaviour {
 
 	void FixedUpdate () {
 
-		moveDirection = GetInput ();
+		if (photonView.isMine) {
+			moveDirection = GetInput ();
 		
-		moveDirection *= speed;
-		//If the character is moving diagonally, divide magnitude by 1.4 to prevent huge speed buffs from diagonal walking
-		if (moveDirection.x != 0 && moveDirection.z != 0) {
-			moveDirection /= 1.4f;
-		}
+			moveDirection *= speed;
+			//If the character is moving diagonally, divide magnitude by 1.4 to prevent huge speed buffs from diagonal walking
+			if (moveDirection.x != 0 && moveDirection.z != 0) {
+				moveDirection /= 1.4f;
+			}
 
-		if (controller.isGrounded) {
-			hasJumped = false;
-		}
+			if (controller.isGrounded) {
+				hasJumped = false;
+			}
 
-		if (GetJump () && !hasJumped) {
-			moveDirection.y = jumpSpeed;
-			hasJumped = true;
-		} else {
-			moveDirection.y = 0;
+			if (GetJump () && !hasJumped) {
+				photonView.RPC ("Jump", PhotonTargets.AllBuffered);
+			} else {
+				photonView.RPC ("DontJump", PhotonTargets.AllBuffered);
+			}
 		}
 	}
 
@@ -46,7 +47,28 @@ public abstract class IndivMove : MonoBehaviour {
 		return moveDirection.y;
 	}
 
-	protected abstract Vector3 GetInput();
+	private Vector3 GetInput() {
+		return new Vector3 (Input.GetAxis ("Horizontal"), 0, Input.GetAxis ("Vertical"));
+	}
 
-	protected abstract bool GetJump();
+	private bool GetJump() {
+		return Input.GetButtonDown ("Jump");
+	}
+
+	[PunRPC] void Jump() {
+		moveDirection.y = jumpSpeed;
+		hasJumped = true;
+	}
+
+	[PunRPC] void DontJump() {
+		moveDirection.y = 0;
+	}
+
+	void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info){
+		if (stream.isWriting) {
+			stream.SendNext (moveDirection);
+		} else {
+			moveDirection = (Vector3) stream.ReceiveNext ();
+		}
+	}
 }

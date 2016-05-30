@@ -8,29 +8,24 @@ public class GroupMove : MonoBehaviour {
 
 	CharacterController controller;
 
-	IndivMove player1Move;
-	IndivMove player2Move;
+	IndivMove[] playerMoves;
 	
 	float gravity = Physics.gravity.y;
 
 	Vector3 moveDirection = Vector3.zero;
 	float upSpeed = 0;
 
-	bool canMove = true;
-
 	void Start() {
 		controller = GetComponent<CharacterController>();
-
-		player1Move = transform.Find ("Players").Find ("Player1").GetComponent<IndivMove> ();
-		player2Move = transform.Find ("Players").Find ("Player2").GetComponent<IndivMove> ();
 	}
 
 	void FixedUpdate() {
-		if (canMove) {
-			if (controller.isGrounded) {
-				moveDirection = GetInput ();
-				moveDirection = transform.TransformDirection (moveDirection);
-			}
+		//TODO - only grab these when somebody joins
+		playerMoves = GetComponentsInChildren<IndivMove> ();
+
+		if (controller.isGrounded) {
+			moveDirection = GetInput ();
+			moveDirection = transform.TransformDirection (moveDirection);
 		}
 
 		if (GetInput ().y != 0) {
@@ -42,12 +37,16 @@ public class GroupMove : MonoBehaviour {
 			}
 		}
 
-		//ADD gravity because it's negative
-		upSpeed += gravity * Time.fixedDeltaTime;
+		if (!controller.isGrounded && PhotonNetwork.inRoom) {
+			//ADD gravity because it's negative
+			upSpeed += gravity * Time.fixedDeltaTime;
+		}
 
 		moveDirection.y = upSpeed;
 
-		controller.Move(moveDirection * Time.deltaTime);
+		if (PhotonNetwork.inRoom) {
+			controller.Move (moveDirection * Time.fixedDeltaTime);
+		}
 	}
 
 	public void StopMotion() {
@@ -64,10 +63,22 @@ public class GroupMove : MonoBehaviour {
 	}
 
 	private Vector3 GetInput() { 
-		return player1Move.GetMoveDir () + player2Move.GetMoveDir ();
+		Vector3 moveSum = Vector3.zero;
+
+		foreach (IndivMove move in playerMoves) {
+			moveSum += move.GetMoveDir ();
+		}
+
+		return moveSum;
 	}
 
 	private float GetJumpInput() {
-		return player1Move.GetUpSpeed () + player2Move.GetUpSpeed ();
+		float upSpeedSum = 0;
+
+		foreach (IndivMove move in playerMoves) {
+			upSpeedSum += move.GetUpSpeed ();
+		}
+
+		return upSpeedSum;
 	}
 }
