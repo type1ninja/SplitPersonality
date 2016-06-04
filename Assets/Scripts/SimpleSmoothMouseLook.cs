@@ -20,7 +20,7 @@ public class SimpleSmoothMouseLook : Photon.MonoBehaviour
 	// Assign this if there's a parent object controlling motion, such as a Character Controller.
 	// Yaw rotation will affect this object instead of the camera if set.
 	public GameObject characterBody;
-
+	
 	public bool shouldLook = true;
 	
 	void Start()
@@ -34,9 +34,9 @@ public class SimpleSmoothMouseLook : Photon.MonoBehaviour
 	
 	void Update()
 	{
-
+		
 		if (photonView.isMine) {
-
+			
 			if (shouldLook) {
 				Cursor.lockState = CursorLockMode.Locked;
 				Cursor.visible = false;
@@ -44,38 +44,38 @@ public class SimpleSmoothMouseLook : Photon.MonoBehaviour
 				Cursor.lockState = CursorLockMode.None;
 				Cursor.visible = true;
 			}
-
+			
 			if (shouldLook) {
 				// Allow the script to clamp based on a desired target value.
 				var targetOrientation = Quaternion.Euler (targetDirection);
 				var targetCharacterOrientation = Quaternion.Euler (targetCharacterDirection);
-		
+				
 				// Get raw mouse input for a cleaner reading on more sensitive mice.
 				var mouseDelta = new Vector2 (Input.GetAxisRaw ("Mouse X"), Input.GetAxisRaw ("Mouse Y"));
-		
+				
 				// Scale input against the sensitivity setting and multiply that against the smoothing value.
 				mouseDelta = Vector2.Scale (mouseDelta, new Vector2 (sensitivity.x * smoothing.x, sensitivity.y * smoothing.y));
-		
+				
 				// Interpolate mouse movement over time to apply smoothing delta.
 				_smoothMouse.x = Mathf.Lerp (_smoothMouse.x, mouseDelta.x, 1f / smoothing.x);
 				_smoothMouse.y = Mathf.Lerp (_smoothMouse.y, mouseDelta.y, 1f / smoothing.y);
-		
+				
 				// Find the absolute mouse movement value from point zero.
 				_mouseAbsolute += _smoothMouse;
-		
+				
 				// Clamp and apply the local x value first, so as not to be affected by world transforms.
 				if (clampInDegrees.x < 360)
 					_mouseAbsolute.x = Mathf.Clamp (_mouseAbsolute.x, -clampInDegrees.x * 0.5f, clampInDegrees.x * 0.5f);
-		
+				
 				var xRotation = Quaternion.AngleAxis (-_mouseAbsolute.y, targetOrientation * Vector3.right);
 				transform.localRotation = xRotation;
-		
+				
 				// Then clamp and apply the global y value.
 				if (clampInDegrees.y < 360)
 					_mouseAbsolute.y = Mathf.Clamp (_mouseAbsolute.y, -clampInDegrees.y * 0.5f, clampInDegrees.y * 0.5f);
-		
+				
 				transform.localRotation *= targetOrientation;
-		
+				
 				// If there's a character body that acts as a parent to the camera
 				if (characterBody) {
 					var yRotation = Quaternion.AngleAxis (_mouseAbsolute.x, characterBody.transform.up);

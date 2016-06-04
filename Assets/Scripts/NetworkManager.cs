@@ -28,14 +28,11 @@ public class NetworkManager : MonoBehaviour {
 	}
 
 	void SpawnMyPlayer() {
+		myPlayer = PhotonNetwork.Instantiate ("Player", new Vector3(0, 5, 0), Quaternion.Euler (Vector3.zero), 0).transform;
 
-		myPlayer = PhotonNetwork.Instantiate ("Player", Vector3.zero, Quaternion.Euler (Vector3.zero), 0).transform;
-		myPlayer.GetComponent<PhotonView> ().RPC ("SetParentToChar", PhotonTargets.AllBuffered);
-
-		myPlayer.GetComponent<IndivMove> ().enabled = true;
+		myPlayer.GetComponent<NetworkPlayer> ().enabled = false;
 		myPlayer.GetComponent<SimpleSmoothMouseLook> ().enabled = true;
-
-		//TODO - instead of using AllBuffered RPC movements, get the current state from the master client here
+		myPlayer.GetComponent<PlayerControl> ().enabled = true;
 	}
 
 	//Sequential connecting stuff
