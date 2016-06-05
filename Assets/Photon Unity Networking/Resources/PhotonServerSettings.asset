@@ -43,4 +43,5 @@ MonoBehaviour:
   - DontJump
   - Jump
   - UpdateUpSpeed
+  - SetParent
   DisableAutoOpenWizard: 1
